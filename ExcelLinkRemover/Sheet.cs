@@ -28,6 +28,7 @@ namespace ExcelLinkRemover
             // Removing the block with external links, if any.
             if (extLst != null)
             {
+                count += extLst.ChildNodes.Count;
                 root.RemoveChild(extLst);
             }
 
