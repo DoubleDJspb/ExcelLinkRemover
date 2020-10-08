@@ -21,6 +21,7 @@ namespace ExcelLinkRemover
         /// <returns>Returns the number of operations performed.</returns>
         internal static int Process(string tempPath)
         {
+            var count = 0;
             var regex = new Regex(@"\[[0-9]+\]");
             var path = tempPath + workbook;
             var links = tempPath + externalLinks;
@@ -42,18 +43,21 @@ namespace ExcelLinkRemover
             }
 
             // Processing all external connections.
-            var ids = new string[references.ChildNodes.Count];
-
-            for (int i = 0; i < ids.Length; i++)
+            if (references != null)
             {
-                ids[i] = references.ChildNodes[i].Attributes.GetNamedItem("r:id")?.Value;
+                var ids = new string[references.ChildNodes.Count];
+
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    ids[i] = references.ChildNodes[i].Attributes.GetNamedItem("r:id")?.Value;
+                }
+
+                // Removing links to external relations.
+                count += ProcessRels(tempPath, ids);
+
+                // Removing the block with external references, if any.
+                root.RemoveChild(references);
             }
-
-            // Removing the block with external references, if any.
-            root.RemoveChild(root["externalReferences"]);
-
-            // Removing links to external relations.
-            int count = ProcessRels(tempPath, ids);
 
             // Deleting the folder with external relations
             if (Directory.Exists(links))
